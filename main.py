@@ -20,6 +20,8 @@ shapes = [
     np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]),  # 3x3 square
     np.array([[1, 1, 1, 1], [1, 1, 1, 1]]),  # 4x2 rectangle
     np.array([[1, 1], [1, 1], [1, 1], [1, 1]]),  # 2x4 rectangle
+    np.array([[1, 0], [0, 1], [1, 0], [0, 1]]),
+    np.array([[0, 1], [1, 0], [0, 1], [1, 0]])
 ]
 
 def drawGrid(screen):
