@@ -14,6 +14,8 @@ white = (255, 255, 255)
 # Colors for the shapes
 colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]  # Red, Green, Blue, Yellow
 
+colorIdxToName = {0: "Red", 1: "Green", 2: "Blue", 3: "Yellow"}
+
 # Shapes
 shapes = [
     np.array([[1]]),  # 1x1 square
@@ -26,6 +28,18 @@ shapes = [
     np.array([[0, 1, 0], [1, 0, 1]]),  # T shape with holes
     np.array([[1, 0, 1], [0, 1, 0]])  # T shape with holes
 ]
+
+shapesIdxToName = {
+    0: "Square",
+    1: "SquareWithHoles",
+    2: "SquareWithHolesTranspose",
+    3: "RectangleWithHoles",
+    4: "RectangleWithHolesTranspose",
+    5: "RectangleVerticleWithHoles",
+    6: "RectangleVerticleWithHolesTranspose",
+    7: "SparseTShape",
+    8: "SparseTShapeReverse",
+}
 
 # Global variables
 screen = None
