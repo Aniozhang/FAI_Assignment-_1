@@ -1,5 +1,8 @@
-# FAI_Assignment-_1
+# FAI Assignment-1
 Assignment 1 for CS4100 
 
 main.py is the simulaion code.
-test.py is the utility code to interact with the environment with another script. 
+
+The main file has two options. GUI and CLI
+Utilize the GUI mode to understand the problem. 
+Utilize the CLI mode to implement the soulution.
