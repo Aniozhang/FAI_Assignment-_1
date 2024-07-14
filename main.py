@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 
 # Constants
-gridSize = 10
+gridSize = 6
 cellSize = 40
 screenSize = gridSize * cellSize
 fps = 60
@@ -16,13 +16,26 @@ colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]  # Red, Green, B
 
 # Shapes
 shapes = [
-    np.array([[1, 1], [1, 1]]),  # 2x2 square
-    np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]),  # 3x3 square
-    np.array([[1, 1, 1, 1], [1, 1, 1, 1]]),  # 4x2 rectangle
-    np.array([[1, 1], [1, 1], [1, 1], [1, 1]]),  # 2x4 rectangle
-    np.array([[1, 0], [0, 1], [1, 0], [0, 1]]),
-    np.array([[0, 1], [1, 0], [0, 1], [1, 0]])
+    np.array([[1]]),  # 1x1 square
+    np.array([[1, 0], [0, 1]]),  # 2x2 square with holes
+    np.array([[0, 1], [1, 0]]),  # 2x2 square with holes
+    np.array([[1, 0], [0, 1], [1, 0], [0, 1]]),  # 2x4 rectangle with holes
+    np.array([[0, 1], [1, 0], [0, 1], [1, 0]]),  # 2x4 rectangles with holes
+    np.array([[1, 0, 1, 0], [0, 1, 0, 1]]),  # 4x2 rectangle with holes
+    np.array([[0, 1, 0, 1], [1, 0, 1, 0]]),  # 4x2 rectangles with holes
+    np.array([[0, 1, 0], [1, 0, 1]]),  # T shape with holes
+    np.array([[1, 0, 1], [0, 1, 0]])  # T shape with holes
 ]
+
+# Global variables
+screen = None
+clock = None
+grid = None
+currentShapeIndex = None
+currentColorIndex = None
+shapePos = None
+placedShapes = None
+
 
 def drawGrid(screen):
     for x in range(0, screenSize, cellSize):
@@ -30,12 +43,14 @@ def drawGrid(screen):
             rect = pygame.Rect(x, y, cellSize, cellSize)
             pygame.draw.rect(screen, black, rect, 1)
 
+
 def drawShape(screen, shape, color, pos):
     for i, row in enumerate(shape):
         for j, cell in enumerate(row):
             if cell:
                 rect = pygame.Rect((pos[0] + j) * cellSize, (pos[1] + i) * cellSize, cellSize, cellSize)
                 pygame.draw.rect(screen, color, rect)
+
 
 def canPlace(grid, shape, pos):
     for i, row in enumerate(shape):
@@ -47,11 +62,13 @@ def canPlace(grid, shape, pos):
                     return False
     return True
 
+
 def placeShape(grid, shape, pos, colorIndex):
     for i, row in enumerate(shape):
         for j, cell in enumerate(row):
             if cell:
                 grid[pos[1] + i, pos[0] + j] = colorIndex
+
 
 def removeShape(grid, shape, pos):
     for i, row in enumerate(shape):
@@ -59,10 +76,11 @@ def removeShape(grid, shape, pos):
             if cell:
                 grid[pos[1] + i, pos[0] + j] = -1
 
+
 def checkGrid(grid):
     if -1 in grid:
         return False
-    
+
     for i in range(gridSize):
         for j in range(gridSize):
             color = grid[i, j]
@@ -74,27 +92,37 @@ def checkGrid(grid):
                 return False
             if j < gridSize - 1 and grid[i, j + 1] == color:
                 return False
-
     return True
 
+
 def exportGridState(grid):
-    return ''.join(chr(cell + 65) for row in grid for cell in row)
+    return grid
+    # return ''.join(chr(cell + 65) for row in grid for cell in row)
+
 
 def importGridState(gridState):
     grid = np.array([ord(char) - 65 for char in gridState]).reshape((gridSize, gridSize))
     return grid
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((screenSize, screenSize))
-    pygame.display.set_caption("Shape Placement Grid")
-    clock = pygame.time.Clock()
+
+def setup(GUI=True):
+    global screen, clock, grid, currentShapeIndex, currentColorIndex, shapePos, placedShapes
+
+    if GUI:
+        pygame.init()
+        screen = pygame.display.set_mode((screenSize, screenSize))
+        pygame.display.set_caption("Shape Placement Grid")
+        clock = pygame.time.Clock()
 
     grid = np.full((gridSize, gridSize), -1)
     currentShapeIndex = 0
     currentColorIndex = 0
     shapePos = [0, 0]
     placedShapes = []
+
+
+def loop_gui():
+    global currentShapeIndex, currentColorIndex, shapePos, grid, placedShapes
 
     running = True
     while running:
@@ -138,7 +166,7 @@ def main():
                     dummyGridState = exportGridState(np.random.randint(-1, 4, size=(gridSize, gridSize)))
                     grid = importGridState(dummyGridState)
                     placedShapes.clear()  # Clear history since we are importing a new state
-        
+
         # Draw already placed shapes
         for i in range(gridSize):
             for j in range(gridSize):
@@ -151,16 +179,72 @@ def main():
 
     pygame.quit()
 
+
+def loop_terminal():
+    global currentShapeIndex, currentColorIndex, shapePos, grid, placedShapes
+
+    print("Enter commands (W/A/S/D to move, E to place, Q to quit, U to undo, C to change shape, K to change color):")
+    running = True
+    while running:
+        command = input("Command: ").strip().upper()
+        if command == 'Q':
+            running = False
+        elif command == 'W':
+            shapePos[1] = max(0, shapePos[1] - 1)
+        elif command == 'S':
+            shapePos[1] = min(gridSize - len(shapes[currentShapeIndex]), shapePos[1] + 1)
+        elif command == 'A':
+            shapePos[0] = max(0, shapePos[0] - 1)
+        elif command == 'D':
+            shapePos[0] = min(gridSize - len(shapes[currentShapeIndex][0]), shapePos[0] + 1)
+        elif command == 'E':
+            if canPlace(grid, shapes[currentShapeIndex], shapePos):
+                placeShape(grid, shapes[currentShapeIndex], shapePos, currentColorIndex)
+                placedShapes.append((currentShapeIndex, shapePos.copy(), currentColorIndex))
+                if checkGrid(grid):
+                    print("All cells are covered with no overlaps and no adjacent same colors!")
+                else:
+                    print("Grid conditions not met!")
+        elif command == 'C':
+            currentShapeIndex = (currentShapeIndex + 1) % len(shapes)
+        elif command == 'K':
+            currentColorIndex = (currentColorIndex + 1) % len(colors)
+        elif command == 'U':  # Undo the last placed shape
+            if placedShapes:
+                lastShapeIndex, lastShapePos, lastColorIndex = placedShapes.pop()
+                removeShape(grid, shapes[lastShapeIndex], lastShapePos)
+
+        # Display grid state
+        printGridState(grid)
+
+
+def printGridState(grid):
+    for row in grid:
+        print(' '.join(f'{cell:2}' for cell in row))
+    print()
+
+
+def main():
+    print("Select mode: 1 for GUI, 2 for Terminal")
+    mode = input("Mode: ").strip()
+    setup(True if mode == '1' else False)
+    if mode == '1':
+        loop_gui()
+    elif mode == '2':
+        loop_terminal()
+
+
 def printControls():
-    print("Use arrows to move the shapes.")
-    print("Use W to change the shape.")
-    print("Use S to change the color.")
-    print("Press Enter to place the shape.")
+    print("Use arrows to move the shapes in GUI mode.")
+    print("Use W/A/S/D to move the shapes in Terminal mode.")
+    print("Use W/C to change the shape.")
+    print("Use S/K to change the color.")
+    print("Press Enter/E to place the shape.")
     print("Press U to undo the last placed shape.")
     print("Press E to export the grid state.")
     print("Press I to import a dummy grid state.")
+    print("Press Q to quit.")
     print("Press any key to continue")
-    input()
 
 if __name__ == "__main__":
     printControls()
