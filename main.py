@@ -166,6 +166,7 @@ def loop_gui():
                             print("Grid conditions not met!")
                 elif event.key == pygame.K_w:
                     currentShapeIndex = (currentShapeIndex + 1) % len(shapes)
+                    print("Current shape", shapesIdxToName[currentShapeIndex])
                 elif event.key == pygame.K_s:
                     currentColorIndex = (currentColorIndex + 1) % len(colors)
                 elif event.key == pygame.K_u:  # Undo the last placed shape
@@ -221,6 +222,7 @@ def loop_terminal():
                     print("Grid conditions not met!")
         elif command == 'C':
             currentShapeIndex = (currentShapeIndex + 1) % len(shapes)
+            print("Current shape", shapesIdxToName[currentShapeIndex])
         elif command == 'K':
             currentColorIndex = (currentColorIndex + 1) % len(colors)
         elif command == 'U':  # Undo the last placed shape
