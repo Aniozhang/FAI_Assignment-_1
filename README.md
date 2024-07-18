@@ -1,5 +1,5 @@
 # FAI Assignment-1
-### This assignment was designmed by Anio Zhang and Ashwin R Bharadwaj
+### This assignment was designed by Anio Zhang and Ashwin R Bharadwaj
 
 
 ## Used by CS4100 at northeastern university. 
